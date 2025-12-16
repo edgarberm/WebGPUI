@@ -12,7 +12,7 @@ This repository is not a finished framework. It is a **living experiment** focus
 
 * Explore **retained-mode UI** concepts on top of WebGPU
 * Implement a **two-pass layout system** (measure → layout)
-* Experiment with **stack-based layouts** (VStack / HStack)
+* Experiment with **node-based layouts** (VNode / HNode)
 * Render everything via **GPU pipelines**, not DOM
 * Keep the codebase **small, readable, and hackable**
 
@@ -27,17 +27,17 @@ Non-goals (for now):
 
 ## 🧠 Core Concepts
 
-### Declarative Views
+### Declarative Nodes
 
-UI is described using a tree of `View` objects:
+UI is described using a tree of `Node` objects:
 
 ```js
-new VStack()
+new VNode()
   .spacing(16)
   .padding(20)
   .children(
     new Text('Hello WebGPU').font(28).fontWeight('bold'),
-    new View().frame({ width: 300, height: 20 })
+    new Node().frame({ width: 300, height: 20 })
   )
 ```
 
@@ -64,8 +64,8 @@ Everything ends up as **vertex buffers + GPU pipelines**.
 
 What currently works:
 
-* Basic `View` abstraction
-* `VStack`, `HStack`, `ZStack` and `Text`
+* Basic `Node` abstraction
+* `VNode`, `HNode`, `ZNode` and `Text`
 * Padding, spacing, fixed frames
 * Text rasterization via offscreen canvas → GPU textures
 * WebGPU render loop
