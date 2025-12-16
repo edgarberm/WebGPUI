@@ -57,43 +57,15 @@ export default class View {
     const x1 = ((this.x + this.w) / cw) * 2 - 1
     const y1 = 1 - ((this.y + this.h) / ch) * 2
     const [r, g, b, a] = this.bgColor
+
+    // prettier-ignore
     return new Float32Array([
-      x0,
-      y0,
-      r,
-      g,
-      b,
-      a,
-      x1,
-      y0,
-      r,
-      g,
-      b,
-      a,
-      x0,
-      y1,
-      r,
-      g,
-      b,
-      a,
-      x0,
-      y1,
-      r,
-      g,
-      b,
-      a,
-      x1,
-      y0,
-      r,
-      g,
-      b,
-      a,
-      x1,
-      y1,
-      r,
-      g,
-      b,
-      a,
+      x0, y0, r, g, b, a,
+      x1, y0, r, g, b, a,
+      x0, y1, r, g, b, a,
+      x0, y1, r, g, b, a,
+      x1, y0, r, g, b, a,
+      x1, y1, r, g, b, a,
     ])
   }
 
