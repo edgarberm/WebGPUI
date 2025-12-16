@@ -1,7 +1,7 @@
-import View from './View.js'
-import VStack from './VStack.js'
-import HStack from './HStack.js'
-import ZStack from './ZStack.js'
+import Node from './Node.js'
+import VNode from './VNode.js'
+import HNode from './HNode.js'
+import ZNode from './ZNode.js'
 import Text from './Text.js'
 
-export { View, VStack, HStack, ZStack, Text }
+export { Node, VNode, HNode, ZNode, Text }

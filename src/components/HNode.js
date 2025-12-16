@@ -1,6 +1,6 @@
-import View from './View.js'
+import Node from './Node.js'
 
-export default class HStack extends View {
+export default class HNode extends Node {
   spacing(value) {
     this.stackSpacing = value
 

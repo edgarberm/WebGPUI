@@ -1,6 +1,6 @@
 import { normalizeColor } from '../utils/utils.js'
 
-export default class View {
+export default class Node {
   constructor() {
     this.explicitWidth = null
     this.explicitHeight = null

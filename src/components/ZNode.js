@@ -1,9 +1,9 @@
-import View from './View.js'
+import Node from './Node.js'
 
-export default class ZStack extends View {
+export default class ZNode extends Node {
   constructor() {
     super()
-    this.alignmentHorizontal = 'center' // 'leading', 'center', 'trailing'
+    this.alignmentHorizontal = 'center' // 'left', 'center', 'right'
     this.alignmentVertical = 'center' // 'top', 'center', 'bottom'
   }
 
@@ -47,13 +47,13 @@ export default class ZStack extends View {
 
       // Alineación horizontal
       switch (this.alignmentHorizontal) {
-        case 'leading':
+        case 'left':
           cx = x + this.paddingVal
           break
         case 'center':
           cx = x + this.paddingVal + (iw - c.measuredWidth) / 2
           break
-        case 'trailing':
+        case 'right':
           cx = x + this.paddingVal + (iw - c.measuredWidth)
           break
       }

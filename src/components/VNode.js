@@ -1,6 +1,6 @@
-import View from './View.js'
+import Node from './Node.js'
 
-export default class VStack extends View {
+export default class VNode extends Node {
   spacing(v) {
     this.stackSpacing = v
 

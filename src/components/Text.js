@@ -1,7 +1,7 @@
-import View from './View.js'
+import Node from './Node.js'
 import { normalizeColor } from '../utils/utils.js'
 
-export default class Text extends View {
+export default class Text extends Node {
   constructor(content) {
     super()
 

@@ -1,4 +1,4 @@
-import { colorShader, textShader, rectShader } from '../shaders/index.js'
+import { textShader, rectShader } from '../shaders/index.js'
 import TextRenderer from './TextRenderer.js'
 
 /**
