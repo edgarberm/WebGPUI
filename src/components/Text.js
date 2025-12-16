@@ -49,17 +49,11 @@ export default class Text extends Node {
     this.measuredHeight = ts.height + padding * 2
   }
 
-  layout(x, y, availableWidth, availableHeight) {
+  layout(x, y) {
     this.x = x
     this.y = y
-    this.w =
-      this.maxWidth === Infinity
-        ? availableWidth
-        : Math.min(this.measuredWidth, availableWidth)
-    this.h =
-      this.maxHeight === Infinity
-        ? availableHeight
-        : Math.min(this.measuredHeight, availableHeight)
+    this.w = this.measuredWidth
+    this.h = this.measuredHeight
   }
 
   prepareTexture(device, textRenderer) {

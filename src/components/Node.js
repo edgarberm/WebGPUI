@@ -53,9 +53,20 @@ export default class Node {
     return this
   }
 
-  measure() {
-    this.measuredWidth = this.explicitWidth ?? this.paddingVal * 2
-    this.measuredHeight = this.explicitHeight ?? this.paddingVal * 2
+  measure(tr) {
+    let w = this.paddingVal * 2
+    let h = this.paddingVal * 2
+
+    if (this.childrenArray.length) {
+      this.childrenArray.forEach((c) => {
+        c.measure(tr)
+        w = Math.max(w, c.measuredWidth + this.paddingVal * 2)
+        h = Math.max(h, c.measuredHeight + this.paddingVal * 2)
+      })
+    }
+
+    this.measuredWidth = this.explicitWidth ?? w
+    this.measuredHeight = this.explicitHeight ?? h
   }
 
   layout(x, y, aw, ah) {

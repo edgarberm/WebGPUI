@@ -1,8 +1,20 @@
 import Node from './Node.js'
 
 export default class VNode extends Node {
+  constructor() {
+    super()
+    this.stackSpacing = 0
+    this.alignmentHorizontal = 'left' // 'left' | 'center' | 'right'
+  }
+
   spacing(v) {
     this.stackSpacing = v
+
+    return this
+  }
+
+  alignment(value) {
+    this.alignmentHorizontal = value ?? 'left'
 
     return this
   }
@@ -30,8 +42,24 @@ export default class VNode extends Node {
     let cy = y + this.paddingVal
 
     this.childrenArray.forEach((c) => {
-      c.layout(x + this.paddingVal, cy, iw, c.measuredHeight)
-      cy += c.h + (this.stackSpacing || 0)
+      let cx = x + this.paddingVal
+
+      switch (this.alignmentHorizontal) {
+        case 'center':
+          cx += (iw - c.measuredWidth) / 2
+          break
+        case 'right':
+          cx += iw - c.measuredWidth
+          break
+      }
+
+      if (c.isText) {
+        c.layout(cx, cy) // Text usa su tamaño real
+      } else {
+        c.layout(cx, cy, iw, c.measuredHeight)
+      }
+
+      cy += c.h + this.stackSpacing
     })
   }
 }
