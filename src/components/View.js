@@ -1,3 +1,5 @@
+import { normalizeColor } from '../utils/utils.js'
+
 export default class View {
   constructor() {
     this.explicitWidth = null
@@ -23,7 +25,7 @@ export default class View {
       this.explicitWidth = v
       this.explicitHeight = h
     }
-    
+
     return this
   }
 
@@ -34,7 +36,7 @@ export default class View {
   }
 
   background(c) {
-    this.bgColor = c
+    this.bgColor = normalizeColor(c)
 
     return this
   }
@@ -70,7 +72,7 @@ export default class View {
     const x1 = ((this.x + this.w) / cw) * 2 - 1
     const y1 = 1 - ((this.y + this.h) / ch) * 2
     const [r, g, b, a] = this.bgColor
-    
+
     // Coordenadas locales del fragmento (para el SDF)
     const w = this.w
     const h = this.h

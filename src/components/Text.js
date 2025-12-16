@@ -1,4 +1,5 @@
 import View from './View.js'
+import { normalizeColor } from '../utils/utils.js'
 
 export default class Text extends View {
   constructor(content) {
@@ -29,7 +30,7 @@ export default class Text extends View {
   }
 
   foregroundColor(color) {
-    this.textColor = color
+    this.textColor = normalizeColor(color)
     this.texture = null
 
     return this
