@@ -15,6 +15,7 @@ export default class ZStack extends View {
       this.alignmentHorizontal = h ?? 'center'
       this.alignmentVertical = v ?? 'center'
     }
+    
     return this
   }
 

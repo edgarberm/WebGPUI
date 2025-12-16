@@ -23,26 +23,31 @@ export default class View {
       this.explicitWidth = v
       this.explicitHeight = h
     }
+    
     return this
   }
 
   padding(p) {
     this.paddingVal = p
+
     return this
   }
 
   background(c) {
     this.bgColor = c
+
     return this
   }
 
   cornerRadius(r) {
     this.cornerRadiusVal = r
+
     return this
   }
-  
+
   children(...c) {
     this.childrenArray = c
+
     return this
   }
 

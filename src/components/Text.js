@@ -17,7 +17,7 @@ export default class Text extends View {
     this.fontSize = size
     this.fontFamily = family
     this.texture = null
-    
+
     return this
   }
 
@@ -83,31 +83,14 @@ export default class Text extends View {
     const x1 = ((this.x + this.w) / canvasWidth) * 2 - 1
     const y1 = 1 - ((this.y + this.h) / canvasHeight) * 2
 
+    // prettier-ignore
     return new Float32Array([
-      x0,
-      y0,
-      0,
-      0,
-      x1,
-      y0,
-      1,
-      0,
-      x0,
-      y1,
-      0,
-      1,
-      x0,
-      y1,
-      0,
-      1,
-      x1,
-      y0,
-      1,
-      0,
-      x1,
-      y1,
-      1,
-      1,
+      x0, y0, 0, 0,
+      x1, y0, 1, 0,
+      x0, y1, 0, 1,
+      x0, y1, 0, 1,
+      x1, y0, 1, 0,
+      x1, y1, 1, 1,
     ])
   }
 }
