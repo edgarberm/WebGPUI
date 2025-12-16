@@ -1,4 +1,4 @@
-import { colorShader, textShader } from '../shaders/index.js'
+import { colorShader, textShader, rectShader } from '../shaders/index.js'
 import TextRenderer from './TextRenderer.js'
 
 /**
@@ -33,25 +33,27 @@ export default class WebGPURenderer {
     this.rectPipeline = this.device.createRenderPipeline({
       layout: 'auto',
       vertex: {
-        module: this.device.createShaderModule({ code: colorShader }),
+        module: this.device.createShaderModule({ code: rectShader }),
         entryPoint: 'vs',
         buffers: [
           {
-            arrayStride: 24,
+            arrayStride: 44, // 11 floats * 4 bytes = 44 bytes
             attributes: [
-              { shaderLocation: 0, offset: 0, format: 'float32x2' },
-              { shaderLocation: 1, offset: 8, format: 'float32x4' },
+              { shaderLocation: 0, offset: 0, format: 'float32x2' }, // pos
+              { shaderLocation: 1, offset: 8, format: 'float32x4' }, // color
+              { shaderLocation: 2, offset: 24, format: 'float32x2' }, // fragPos
+              { shaderLocation: 3, offset: 32, format: 'float32x2' }, // rectSize
+              { shaderLocation: 4, offset: 40, format: 'float32' }, // cornerRadius
             ],
           },
         ],
       },
       fragment: {
-        module: this.device.createShaderModule({ code: colorShader }),
+        module: this.device.createShaderModule({ code: rectShader }),
         entryPoint: 'fs',
         targets: [
           {
             format,
-            // AÑADIR BLENDING para soportar transparencia
             blend: {
               color: {
                 srcFactor: 'src-alpha',
@@ -155,7 +157,7 @@ export default class WebGPURenderer {
 
       pass.setPipeline(this.rectPipeline)
       pass.setVertexBuffer(0, buf)
-      pass.draw(verts.length / 6)
+      pass.draw(verts.length / 11)
     }
 
     // Dibujar textos

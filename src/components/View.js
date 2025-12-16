@@ -6,6 +6,7 @@ export default class View {
     this.maxHeight = null
     this.paddingVal = 0
     this.bgColor = [1.0, 1.0, 1.0, 0.0]
+    this.cornerRadiusVal = 0
     this.childrenArray = []
     this.measuredWidth = 0
     this.measuredHeight = 0
@@ -29,10 +30,17 @@ export default class View {
     this.paddingVal = p
     return this
   }
+
   background(c) {
     this.bgColor = c
     return this
   }
+
+  cornerRadius(r) {
+    this.cornerRadiusVal = r
+    return this
+  }
+  
   children(...c) {
     this.childrenArray = c
     return this
@@ -57,15 +65,23 @@ export default class View {
     const x1 = ((this.x + this.w) / cw) * 2 - 1
     const y1 = 1 - ((this.y + this.h) / ch) * 2
     const [r, g, b, a] = this.bgColor
+    
+    // Coordenadas locales del fragmento (para el SDF)
+    const w = this.w
+    const h = this.h
+    const rad = this.cornerRadiusVal
 
+    // Cada vértice: pos(2) + color(4) + fragPos(2) + rectSize(2) + cornerRadius(1) = 11 floats
     // prettier-ignore
     return new Float32Array([
-      x0, y0, r, g, b, a,
-      x1, y0, r, g, b, a,
-      x0, y1, r, g, b, a,
-      x0, y1, r, g, b, a,
-      x1, y0, r, g, b, a,
-      x1, y1, r, g, b, a,
+      // Triangle 1
+      x0, y0, r, g, b, a, 0, 0, w, h, rad,
+      x1, y0, r, g, b, a, w, 0, w, h, rad,
+      x0, y1, r, g, b, a, 0, h, w, h, rad,
+      // Triangle 2
+      x0, y1, r, g, b, a, 0, h, w, h, rad,
+      x1, y0, r, g, b, a, w, 0, w, h, rad,
+      x1, y1, r, g, b, a, w, h, w, h, rad,
     ])
   }
 

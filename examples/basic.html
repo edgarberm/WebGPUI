@@ -91,7 +91,8 @@
           new HStack().spacing(12).children(
             new VStack()
               .padding(12)
-              .background([0.2, 0.6, 0.9, 1])
+              .background([0.3, 0.6, 0.9, 1.0])
+              .cornerRadius(8)
               .children(
                 new Text('Get Started')
                   .font(14)
@@ -113,7 +114,7 @@
           new ZStack()
             .alignment('center', 'center') // o .alignment({ horizontal: 'center', vertical: 'center' })
             .children(
-              new View().frame(200, 200).background([0.3, 0.6, 0.9, 1.0]), // Fondo azul semitransparente
+              new View().frame(200, 200).background([0.3, 0.6, 0.9, 1.0]).cornerRadius(32), // Fondo azul semitransparente
               new Text('Centrado')
                 .font(24)
                 .fontWeight('bold')
