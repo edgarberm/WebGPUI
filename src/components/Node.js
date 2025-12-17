@@ -10,14 +10,12 @@ export default class Node {
 
     // Style properties
     this.paddingVal = 0
-    this.bgColor = [1.0, 1.0, 1.0, 0.0]
+    this.bgColor = [255, 255, 255, 0]
     this.cornerRadiusVal = 0
 
     // Layout properties
     this.layoutMode = 'none' // 'vertical', 'horizontal', 'stack'
     this.stackSpacing = 0
-    this.alignmentHorizontal = 'left' // 'left', 'center', 'right'
-    this.alignmentVertical = 'top' // 'top', 'center', 'bottom'
     this.justifyContent = 'start' // 'start', 'end', 'center', 'space-between', 'space-around', 'space-evenly'
     this.alignItems = 'start' // 'start', 'center', 'end', 'stretch'
 
@@ -27,10 +25,14 @@ export default class Node {
     // Measured values
     this.measuredWidth = 0
     this.measuredHeight = 0
-    this.x = this.y = this.w = this.h = 0
+    this.x = 0
+    this.y = 0
+    this.w = 0
+    this.h = 0
   }
 
   // ========== LAYOUT MODIFIERS ==========
+  
   direction(mode) {
     this.layoutMode = mode
 
@@ -39,18 +41,6 @@ export default class Node {
 
   spacing(value) {
     this.stackSpacing = value
-
-    return this
-  }
-
-  justify(value) {
-    this.justifyContent = value
-
-    return this
-  }
-
-  align(value) {
-    this.alignItems = value
 
     return this
   }
@@ -227,15 +217,14 @@ export default class Node {
     const iw = this.w - this.paddingVal * 2
     const ih = this.h - this.paddingVal * 2
 
-    // Calcular espacio total ocupado por hijos
     const totalChildrenHeight = this.childrenArray.reduce(
       (sum, c) => sum + c.measuredHeight,
       0
     )
+
     const totalSpacing = (this.childrenArray.length - 1) * this.stackSpacing
     const availableSpace = ih - totalChildrenHeight - totalSpacing
 
-    // Calcular posición inicial y spacing según justify
     let cy = y + this.paddingVal
     let dynamicSpacing = this.stackSpacing
 
@@ -253,23 +242,24 @@ export default class Node {
               availableSpace / (this.childrenArray.length - 1)
             : this.stackSpacing
         break
-      case 'space-around':
-        const spacePerChild = availableSpace / this.childrenArray.length
-        cy += spacePerChild / 2
-        dynamicSpacing = this.stackSpacing + spacePerChild
+      case 'space-around': {
+        const space = availableSpace / this.childrenArray.length
+        cy += space / 2
+        dynamicSpacing = this.stackSpacing + space
         break
-      case 'space-evenly':
-        const evenSpace = availableSpace / (this.childrenArray.length + 1)
-        cy += evenSpace
-        dynamicSpacing = this.stackSpacing + evenSpace
+      }
+      case 'space-evenly': {
+        const space = availableSpace / (this.childrenArray.length + 1)
+        cy += space
+        dynamicSpacing = this.stackSpacing + space
         break
+      }
     }
 
-    // Layout children
     this.childrenArray.forEach((c) => {
       let cx = x + this.paddingVal
 
-      // Cross-axis alignment (horizontal en vstack)
+      // Cross-axis alignment
       switch (this.alignItems) {
         case 'center':
           cx += (iw - c.measuredWidth) / 2
@@ -278,14 +268,14 @@ export default class Node {
           cx += iw - c.measuredWidth
           break
         case 'stretch':
-          // TODO: estirar el hijo al ancho completo
+          // stretch se resuelve pasando iw al layout
           break
       }
 
       if (c.isText) {
         c.layout(cx, cy)
       } else {
-        c.layout(cx, cy, c.measuredWidth, c.measuredHeight)
+        c.layout(cx, cy, iw, c.measuredHeight)
       }
 
       cy += c.h + dynamicSpacing
@@ -296,15 +286,14 @@ export default class Node {
     const iw = this.w - this.paddingVal * 2
     const ih = this.h - this.paddingVal * 2
 
-    // Calcular espacio total ocupado por hijos
     const totalChildrenWidth = this.childrenArray.reduce(
       (sum, c) => sum + c.measuredWidth,
       0
     )
+
     const totalSpacing = (this.childrenArray.length - 1) * this.stackSpacing
     const availableSpace = iw - totalChildrenWidth - totalSpacing
 
-    // Calcular posición inicial y spacing según justify
     let cx = x + this.paddingVal
     let dynamicSpacing = this.stackSpacing
 
@@ -322,23 +311,23 @@ export default class Node {
               availableSpace / (this.childrenArray.length - 1)
             : this.stackSpacing
         break
-      case 'space-around':
-        const spacePerChild = availableSpace / this.childrenArray.length
-        cx += spacePerChild / 2
-        dynamicSpacing = this.stackSpacing + spacePerChild
+      case 'space-around': {
+        const space = availableSpace / this.childrenArray.length
+        cx += space / 2
+        dynamicSpacing = this.stackSpacing + space
         break
-      case 'space-evenly':
-        const evenSpace = availableSpace / (this.childrenArray.length + 1)
-        cx += evenSpace
-        dynamicSpacing = this.stackSpacing + evenSpace
+      }
+      case 'space-evenly': {
+        const space = availableSpace / (this.childrenArray.length + 1)
+        cx += space
+        dynamicSpacing = this.stackSpacing + space
         break
+      }
     }
 
-    // Layout children
     this.childrenArray.forEach((c) => {
       let cy = y + this.paddingVal
 
-      // Cross-axis alignment (vertical en hstack)
       switch (this.alignItems) {
         case 'center':
           cy += (ih - c.measuredHeight) / 2
@@ -347,11 +336,10 @@ export default class Node {
           cy += ih - c.measuredHeight
           break
         case 'stretch':
-          // TODO: estirar el hijo a la altura completa
           break
       }
 
-      c.layout(cx, cy, c.measuredWidth, c.measuredHeight)
+      c.layout(cx, cy, c.measuredWidth, ih)
       cx += c.w + dynamicSpacing
     })
   }
@@ -364,7 +352,6 @@ export default class Node {
       let cx = x + this.paddingVal
       let cy = y + this.paddingVal
 
-      // Alignment (ambos ejes en zstack)
       switch (this.alignItems) {
         case 'center':
           cx += (iw - c.measuredWidth) / 2
@@ -376,7 +363,7 @@ export default class Node {
           break
       }
 
-      c.layout(cx, cy, c.measuredWidth, c.measuredHeight)
+      c.layout(cx, cy, iw, ih)
     })
   }
 
