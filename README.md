@@ -1,9 +1,9 @@
-# 🧱 WebGPUI
+# 🎢 WebGPUI
 
 WebGPUI is an experimental UI and layout library built directly on top of WebGPU.
 
-It is not a framework and does not try to abstract the web.
-This project exists as a research and learning exercise to explore how a modern UI system can be built without the DOM, without CSS, and without Canvas 2D, using WebGPU as the rendering backend.
+It is **not a framework** and does not try to abstract the web.
+This project exists as a research and learning exercise to explore how a modern UI system can be built **without the DOM, without CSS, and without Canvas 2D**, using WebGPU as the rendering backend.
 
 ## 🎯 Project goals
 
@@ -12,77 +12,100 @@ WebGPUI explores and builds, from scratch:
 - A declarative layout system
 - A GPU-driven 2D renderer
 - A node-based UI model
-- A web-native API, not inspired by SwiftUI or React, but by fundamental layout concepts
+- A web-native API inspired by SwiftUI concepts, adapted to feel natural in the web ecosystem
 
-WebGPUI is not production-ready and has no stable API.
+WebGPUI is **not production-ready** and has **no stable API**.
 
-## 🧠 Core concept: Node
+---
 
-All UI is built from a single primitive:
+## 🧠 Core concepts
+
+WebGPUI is built around **two fundamental building blocks**:
 
 ### Node
+
+`Node` is the core layout and rendering primitive.
 
 A Node represents:
 
 - A GPU-rendered rectangle
-- An optional container for child nodes
-- A unit of layout
+- A container for child nodes
+- A unit of layout and composition
 
-There are no specialized node types for stacks or layers.
-Layout behavior is defined through modifiers on the same Node type.
+There are no separate stack or container types.
+**Layout behavior is configured through modifiers on the same Node type**, similar to how CSS flexbox works.
 
-### 📐 Declarative layout
+### Text
 
-Layout is controlled through modifiers applied to a Node.
+`Text` is a specialized node used for rendering text.
 
-#### Layout direction
+It participates fully in layout like any other node, but renders its content using a GPU texture generated from text rasterization.
+
+---
+
+## 📐 Declarative layout
+
+Layout is controlled through modifiers applied to a `Node`.
+
+### Layout direction
 
 ```js
-node.direction('vertical')   // 'vertical' | 'horizontal' | 'stack'
+.direction('vertical')   // 'vertical' | 'horizontal' | 'stack'
 ```
 
-- vertical → column layout
-- horizontal → row layout
-- stack → overlapping / stacking
+`vertical` → column layout (like flex-direction: column)
 
-#### Spacing and padding
+`horizontal` → row layout (like flex-direction: row)
+
+`stack` → overlapping children (Z-stack–like behavior)
+
+
+### Spacing and padding
 
 ```js
-node
-  .spacing(16)
-  .padding(24)
+.spacing(16)
+.padding(24)
 ```
 
-#### Alignment
+`spacing` controls space between children.
+
+`padding` controls inner spacing inside the node.
+
+### Justify & align (flexbox-like)
+
+WebGPUI uses a layout model inspired by CSS flexbox.
 
 ```js
-node.align('center')       // main axis
-node.crossAlign('start')  // cross axis
+.justify('center')  // 'start' | 'end' | 'center' | 'space-between' | 'space-around' | 'space-evenly'
+.align('center')    // 'start' | 'center' | 'end' | 'stretch'
 ```
 
-(depending on the chosen direction)
+`justify` controls distribution along the main axis.
 
-#### 🎨 Visual styling
+`align` controls alignment on the cross axis.
 
-Background and rounded corners
+Behavior depends on the chosen `direction`.
+
+## 🎨 Visual styling
+
+Background and rounded corners are GPU-rendered.
 
 ```js
-node
-  .background([255, 255, 255, 1])
-  .borderRadius(12)
-  ```
+.background([255, 255, 255, 1])
+.cornerRadius(12)
+```
 
-Colors are defined using RGBA, keeping the API familiar to web developers.
+Colors are defined using RGBA values, keeping the API familiar to web developers.
 
-#### 🔤 Text
+## 🔤 Text
 
-Text is implemented as a specialized kind of Node:
+Text is implemented as a specialized node:
 
 ```js
 new Text("Hello WebGPUI")
   .font(24, "system-ui")
   .fontWeight(600)
-  .color([0, 0, 0, 1])
+  .foregroundColor([0, 0, 0, 1])
 ```
 
 Internally:
@@ -90,24 +113,27 @@ Internally:
 - Text is rasterized using a 2D canvas
 - Uploaded as a WebGPU texture
 - Rendered as a quad with alpha blending
+- Participates in layout like any other node
 
-#### 🔁 Layout pipeline
 
-WebGPUI follows a classic two-pass layout model:
+## 🔁 Layout pipeline
+WebGPUI follows a classic two-pass layout model, similar to real UI engines:
 
-1. Measure pass
-Each node computes its intrinsic size.
+1. **Measure pass**. 
+Each node computes its intrinsic size based on content and children.
 
-2. Layout pass
-Each node receives an available space and positions its children.
+1. **Layout pass**. 
+Each node receives an available space and positions its children according to layout rules.
 
-This mirrors how real UI engines work, implemented explicitly and from scratch.
+This pipeline is implemented explicitly and manually, as part of the learning goals of the project.
 
 ## 🚀 Minimal example
 
 ```js
 const app = new Node()
   .direction('vertical')
+  .justify('center')
+  .align('center')
   .spacing(20)
   .padding(40)
   .background([240, 240, 240, 1])
@@ -119,7 +145,7 @@ const app = new Node()
     new Node()
       .frame(200, 100)
       .background([245, 90, 30, 1])
-      .borderRadius(16)
+      .cornerRadius(16)
   )
 
 new WebGPURenderer(canvas, app)
@@ -129,22 +155,22 @@ new WebGPURenderer(canvas, app)
 
 WebGPUI is experimental.
 
-#### Currently implemented
+Currently implemented
+✔️ Unified node-based layout model
 
-✔️ Unified Node model
+✔️ Direction-based layout (vertical / horizontal / stack)
 
-✔️ Direction-based layout
+✔️ Flexbox-like justify & align behavior
 
-✔️ Padding, spacing and alignment
+✔️ Padding and spacing
 
 ✔️ Rounded rectangle rendering on GPU
 
 ✔️ Text rendering via WebGPU
 
-✔️ Full GPU render loop
+✔️ Continuous GPU render loop
 
-
-#### Not implemented / work in progress
+Not implemented / work in progress
 
 ❌ Events and interaction
 
@@ -152,20 +178,19 @@ WebGPUI is experimental.
 
 ❌ Text atlases and batching
 
-❌ Buffer and draw call optimization
+❌ Buffer and draw-call optimization
 
 ❌ Stable public API
-
 
 ## 🧪 Who is this for?
 
 WebGPUI is for:
 
-- Developers who want to understand how UI engines work
+- Developers who want to understand how UI engines work internally
 - People interested in WebGPU and GPU-driven UIs
 - Exploration, experimentation and learning
 
-It is not a replacement for React, SwiftUI or any existing UI framework.
+It is not a replacement for React, SwiftUI, or existing UI frameworks.
 
 ## 📦 Installation
 
@@ -173,14 +198,11 @@ It is not a replacement for React, SwiftUI or any existing UI framework.
 git clone https://github.com/edgarberm/WebGPUI.git
 ```
 
-
-**The project is not currently distributed as an npm package.**
+The project is not currently distributed as an npm package.
 
 ## 📜 License
-
 MIT License.
 
 ## 👤 Author
-
 Created by Edgar Bermejo
-A personal research project focused on UI systems and WebGPU.
+A personal research project focused on UI systems and WebGPU.****
