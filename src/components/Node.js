@@ -18,6 +18,8 @@ export default class Node {
     this.stackSpacing = 0
     this.alignmentHorizontal = 'left' // 'left', 'center', 'right'
     this.alignmentVertical = 'top' // 'top', 'center', 'bottom'
+    this.justifyContent = 'start' // 'start', 'end', 'center', 'space-between', 'space-around', 'space-evenly'
+    this.alignItems = 'start' // 'start', 'center', 'end', 'stretch'
 
     // Children
     this.childrenArray = []
@@ -37,30 +39,30 @@ export default class Node {
 
   spacing(value) {
     this.stackSpacing = value
+
     return this
   }
 
-  alignment(h, v) {
-    if (typeof h === 'object') {
-      // .alignment({ horizontal: 'center', vertical: 'top' })
-      this.alignmentHorizontal = h.horizontal ?? this.alignmentHorizontal
-      this.alignmentVertical = h.vertical ?? this.alignmentVertical
-    } else if (v !== undefined) {
-      // .alignment('center', 'top')
-      this.alignmentHorizontal = h
-      this.alignmentVertical = v
-    } else {
-      // .alignment('center') - aplica a ambos ejes según el layout
-      if (this.layoutMode === 'vertical') {
-        this.alignmentHorizontal = h
-      } else if (this.layoutMode === 'horizontal') {
-        this.alignmentVertical = h
-      } else {
-        // Para stack o none, aplica a ambos
-        this.alignmentHorizontal = h
-        this.alignmentVertical = h
-      }
-    }
+  justify(value) {
+    this.justifyContent = value
+
+    return this
+  }
+
+  align(value) {
+    this.alignItems = value
+
+    return this
+  }
+
+  justify(value) {
+    this.justifyContent = value
+
+    return this
+  }
+
+  align(value) {
+    this.alignItems = value
 
     return this
   }
@@ -223,50 +225,134 @@ export default class Node {
 
   _layoutVStack(x, y, aw, ah) {
     const iw = this.w - this.paddingVal * 2
-    let cy = y + this.paddingVal
+    const ih = this.h - this.paddingVal * 2
 
+    // Calcular espacio total ocupado por hijos
+    const totalChildrenHeight = this.childrenArray.reduce(
+      (sum, c) => sum + c.measuredHeight,
+      0
+    )
+    const totalSpacing = (this.childrenArray.length - 1) * this.stackSpacing
+    const availableSpace = ih - totalChildrenHeight - totalSpacing
+
+    // Calcular posición inicial y spacing según justify
+    let cy = y + this.paddingVal
+    let dynamicSpacing = this.stackSpacing
+
+    switch (this.justifyContent) {
+      case 'end':
+        cy += availableSpace
+        break
+      case 'center':
+        cy += availableSpace / 2
+        break
+      case 'space-between':
+        dynamicSpacing =
+          this.childrenArray.length > 1
+            ? this.stackSpacing +
+              availableSpace / (this.childrenArray.length - 1)
+            : this.stackSpacing
+        break
+      case 'space-around':
+        const spacePerChild = availableSpace / this.childrenArray.length
+        cy += spacePerChild / 2
+        dynamicSpacing = this.stackSpacing + spacePerChild
+        break
+      case 'space-evenly':
+        const evenSpace = availableSpace / (this.childrenArray.length + 1)
+        cy += evenSpace
+        dynamicSpacing = this.stackSpacing + evenSpace
+        break
+    }
+
+    // Layout children
     this.childrenArray.forEach((c) => {
       let cx = x + this.paddingVal
 
-      // Horizontal alignment
-      switch (this.alignmentHorizontal) {
+      // Cross-axis alignment (horizontal en vstack)
+      switch (this.alignItems) {
         case 'center':
           cx += (iw - c.measuredWidth) / 2
           break
-        case 'right':
+        case 'end':
           cx += iw - c.measuredWidth
+          break
+        case 'stretch':
+          // TODO: estirar el hijo al ancho completo
           break
       }
 
       if (c.isText) {
         c.layout(cx, cy)
       } else {
-        c.layout(cx, cy, iw, c.measuredHeight)
+        c.layout(cx, cy, c.measuredWidth, c.measuredHeight)
       }
 
-      cy += c.h + this.stackSpacing
+      cy += c.h + dynamicSpacing
     })
   }
 
   _layoutHStack(x, y, aw, ah) {
+    const iw = this.w - this.paddingVal * 2
     const ih = this.h - this.paddingVal * 2
-    let cx = x + this.paddingVal
 
+    // Calcular espacio total ocupado por hijos
+    const totalChildrenWidth = this.childrenArray.reduce(
+      (sum, c) => sum + c.measuredWidth,
+      0
+    )
+    const totalSpacing = (this.childrenArray.length - 1) * this.stackSpacing
+    const availableSpace = iw - totalChildrenWidth - totalSpacing
+
+    // Calcular posición inicial y spacing según justify
+    let cx = x + this.paddingVal
+    let dynamicSpacing = this.stackSpacing
+
+    switch (this.justifyContent) {
+      case 'end':
+        cx += availableSpace
+        break
+      case 'center':
+        cx += availableSpace / 2
+        break
+      case 'space-between':
+        dynamicSpacing =
+          this.childrenArray.length > 1
+            ? this.stackSpacing +
+              availableSpace / (this.childrenArray.length - 1)
+            : this.stackSpacing
+        break
+      case 'space-around':
+        const spacePerChild = availableSpace / this.childrenArray.length
+        cx += spacePerChild / 2
+        dynamicSpacing = this.stackSpacing + spacePerChild
+        break
+      case 'space-evenly':
+        const evenSpace = availableSpace / (this.childrenArray.length + 1)
+        cx += evenSpace
+        dynamicSpacing = this.stackSpacing + evenSpace
+        break
+    }
+
+    // Layout children
     this.childrenArray.forEach((c) => {
       let cy = y + this.paddingVal
 
-      // Vertical alignment
-      switch (this.alignmentVertical) {
+      // Cross-axis alignment (vertical en hstack)
+      switch (this.alignItems) {
         case 'center':
           cy += (ih - c.measuredHeight) / 2
           break
-        case 'bottom':
+        case 'end':
           cy += ih - c.measuredHeight
+          break
+        case 'stretch':
+          // TODO: estirar el hijo a la altura completa
           break
       }
 
-      c.layout(cx, cy, c.measuredWidth, ih)
-      cx += c.w + this.stackSpacing
+      c.layout(cx, cy, c.measuredWidth, c.measuredHeight)
+      cx += c.w + dynamicSpacing
     })
   }
 
@@ -278,22 +364,14 @@ export default class Node {
       let cx = x + this.paddingVal
       let cy = y + this.paddingVal
 
-      // Horizontal alignment
-      switch (this.alignmentHorizontal) {
+      // Alignment (ambos ejes en zstack)
+      switch (this.alignItems) {
         case 'center':
           cx += (iw - c.measuredWidth) / 2
-          break
-        case 'right':
-          cx += iw - c.measuredWidth
-          break
-      }
-
-      // Vertical alignment
-      switch (this.alignmentVertical) {
-        case 'center':
           cy += (ih - c.measuredHeight) / 2
           break
-        case 'bottom':
+        case 'end':
+          cx += iw - c.measuredWidth
           cy += ih - c.measuredHeight
           break
       }
