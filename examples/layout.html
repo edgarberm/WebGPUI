@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebGPUI - Layout Example</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <script type="module">
+      import WebGPURenderer from '../src/core/Renderer.js'
+      import { Node, Text } from '../src/components/index.js'
+
+      const app = new Node()
+        .direction('vertical')
+        .children(Toolbar(), Hero(), KPIS())
+
+      function Toolbar() {
+        function Logo() {
+          return new Text('WebGPUI')
+            .font(28)
+            .fontWeight(800)
+            .color([255, 255, 255, 1])
+        }
+
+        function Menu() {
+          return new Node()
+            .direction('horizontal')
+            .children(
+              new Text('Home').font(16).color([255, 255, 255, 1]),
+              new Text('About').font(16).color([255, 255, 255, 1]),
+              new Text('Contact').font(16).color([255, 255, 255, 1])
+            )
+        }
+
+        return new Node()
+          .direction('horizontal')
+          .justify('space-between')
+          .align('center')
+          .frame(Infinity, 80)
+          .padding(18)
+          .background([0, 0, 0, 1])
+          .children(Logo(), Menu())
+      }
+
+      function Hero() {
+        return new Node()
+          .direction('stack')
+          .frame(Infinity, 320)
+          .align('center')
+          .justify('center')
+          .background([0, 0, 0, 0.5])
+          .children(
+            new Text('WebGPUI sucks!')
+              .font(32)
+              .fontWeight(800)
+              .color([255, 255, 255, 1])
+          )
+      }
+
+      function KPIS() {
+        function KPI(title) {
+          return new Node()
+            .direction('vertical')
+            .align('center')
+            .spacing(8)
+            .children(new Text(title).font(18).fontWeight(600), new Text('Lorem ipsum dolor sit amet.'))
+        }
+
+        return new Node()
+          .direction('horizontal')
+          .frame(Infinity, 320)
+          .align('start')
+          .justify('space-between')
+          .padding(60)
+          .children(KPI('title 1'), KPI('title 2'), KPI('title 3'))
+      }
+
+      const canvas = document.getElementById('canvas')
+      new WebGPURenderer(canvas, app)
+    </script>
+  </body>
+</html>
