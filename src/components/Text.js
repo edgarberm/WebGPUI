@@ -29,7 +29,7 @@ export default class Text extends Node {
     return this
   }
 
-  foregroundColor(color) {
+  color(color) {
     this.textColor = normalizeColor(color)
     this.texture = null
 
