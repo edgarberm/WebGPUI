@@ -39,15 +39,15 @@
         .background([0, 0, 0, 0.04])
         .children(
           // Header
-          new Text('WebGPUI Framework')
+          new Text('WebGPUI')
             .font(32, 'Impact')
             .fontWeight(800)
-            .foregroundColor([0, 0, 0, 1]),
+            .color([0, 0, 0, 1]),
 
           // Subtitle
           new Text('Declarative UI powered by WebGPU')
             .font(18)
-            .foregroundColor([0, 0, 0, 1]),
+            .color([0, 0, 0, 1]),
 
           // Divider
           new Node()
@@ -65,29 +65,29 @@
         return new Node()
           .direction('vertical')
           .padding(24)
-          .alignment('right')
+          .align('right')
           .background([255, 255, 255, 1])
           .children(
             new Text('✨ Features')
               .font(20)
               .fontWeight('600')
-              .foregroundColor([245, 90, 30, 1]),
+              .color([245, 90, 30, 1]),
 
             new Text('• SwiftUI-like declarative syntax')
               .font(14)
-              .foregroundColor([0, 0, 0, 1]),
+              .color([0, 0, 0, 1]),
 
             new Text('• GPU-accelerated rendering')
               .font(14)
-              .foregroundColor([0, 0, 0, 1]),
+              .color([0, 0, 0, 1]),
 
             new Text('• Layout system with stacks')
               .font(14)
-              .foregroundColor([0, 0, 0, 1]),
+              .color([0, 0, 0, 1]),
 
             new Text('• Text rendering with custom fonts')
               .font(14)
-              .foregroundColor([0, 0, 0, 1])
+              .color([0, 0, 0, 1])
           )
       }
 
@@ -104,7 +104,7 @@
                 new Text('Get Started')
                   .font(14)
                   .fontWeight('600')
-                  .foregroundColor([0, 0, 0, 1])
+                  .color([0, 0, 0, 1])
               ),
 
             new Node()
@@ -114,7 +114,7 @@
                 new Text('WebGPUI Docs')
                   .font(14)
                   .fontWeight('600')
-                  .foregroundColor([0, 0, 0, 1])
+                  .color([0, 0, 0, 1])
               )
           )
       }
@@ -122,7 +122,8 @@
       function Centered() {
         return new Node()
           .direction('stack')
-          .alignment('center', 'center') // o .alignment({ horizontal: 'center', vertical: 'center' })
+          .align('center')
+          .justify('center')
           .children(
             new Node()
               .frame(200, 200)
@@ -131,7 +132,7 @@
             new Text('Centrado')
               .font(24)
               .fontWeight('bold')
-              .foregroundColor([0, 0, 0, 1])
+              .color([0, 0, 0, 1])
           )
       }
 
