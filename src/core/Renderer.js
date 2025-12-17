@@ -134,7 +134,7 @@ export default class WebGPURenderer {
           view: this.ctx.getCurrentTexture().createView(),
           loadOp: 'clear',
           storeOp: 'store',
-          clearValue: { r: 0.95, g: 0.95, b: 0.95, a: 1 },
+          clearValue: { r: 1.0, g: 1.0, b: 1.0, a: 1 },
         },
       ],
     })
