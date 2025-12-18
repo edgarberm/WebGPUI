@@ -32,7 +32,7 @@ export default class Node {
   }
 
   // ========== LAYOUT MODIFIERS ==========
-  
+
   direction(mode) {
     this.layoutMode = mode
 

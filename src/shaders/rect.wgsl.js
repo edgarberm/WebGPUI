@@ -30,27 +30,25 @@ export const rectShader = `
   }
 
   @fragment fn fs(input: VSOut) -> @location(0) vec4<f32> {
-    // Centro del rect
-    let center = input.rectSize * 0.5;
-    
-    // Posición relativa al centro
-    let p = input.fragPos - center;
-    
-    // Calcular distancia al borde usando SDF
-    let dist = sdRoundedBox(p, input.rectSize * 0.5, input.cornerRadius);
-    
-    // Anti-aliasing suave más preciso
-    // Usamos derivadas para calcular el tamaño del píxel en coordenadas locales
-    let pixelSize = length(vec2<f32>(dpdx(p.x), dpdy(p.y)));
-    
-    // Anti-aliasing en aproximadamente 1 píxel
-    //let alpha = 1.0 - smoothstep(-pixelSize, pixelSize, dist);
+  let center = input.rectSize * 0.5;
+  let p = input.fragPos - center;
 
-    // Smoothstep doble (más natural, tipo iOS)
-    let t = clamp(-dist / (pixelSize * 2.5), 0.0, 1.0);
-    let alpha = smoothstep(0.0, 1.0, t);
-    
-    // Aplicar alpha al color
-    return vec4<f32>(input.color.rgb, input.color.a * alpha);
-  }
+  let dist = sdRoundedBox(
+    p,
+    input.rectSize * 0.5,
+    input.cornerRadius
+  );
+
+  // AA correcto en espacio de pantalla
+  let aa = fwidth(dist);
+
+  // Suavizado solo hacia fuera (sin bleeding)
+  let alpha = clamp(0.5 - dist / aa, 0.0, 1.0);
+
+  return vec4<f32>(
+    input.color.rgb,
+    input.color.a * alpha
+  );
+}
+
 `
