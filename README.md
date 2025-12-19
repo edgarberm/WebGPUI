@@ -157,30 +157,20 @@ WebGPUI is experimental.
 
 Currently implemented
 
-✅ Unified node-based layout model
-
-✅ Direction-based layout (vertical / horizontal / stack)
-
-✅ Flexbox-like justify & align behavior
-
-✅ Padding and spacing
-
-✅ Rounded rectangle rendering on GPU
-
-✅ Text rendering via WebGPU
-
-✅ Continuous GPU render loop
-
-✅ Buffer and draw-call optimization
+✅ Unified node-based layout model  
+✅ Direction-based layout (vertical / horizontal / stack)  
+✅ Flexbox-like justify & align behavior  
+✅ Padding and spacing  
+✅ Rounded rectangle rendering on GPU  
+✅ Text rendering via WebGPU  
+✅ Buffer and draw-call optimization  
+✅ Dirty / invalidation system (measure, layout, render)
 
 Not implemented / work in progress
 
-❌ Events and interaction
-
-❌ Clipping / overflow handling
-
-❌ Text atlases and batching
-
+❌ Events and interaction  
+❌ Clipping / overflow handling  
+❌ Text atlases and batching  
 ❌ Stable public API
 
 ## 🧪 Who is this for?
