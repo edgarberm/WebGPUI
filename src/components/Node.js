@@ -37,6 +37,9 @@ export default class Node {
 
     this.parent = null
 
+    this._vertexBuffer = null
+    this._vertices = null
+
     this.dirty = DIRTY_MEASURE | DIRTY_LAYOUT | DIRTY_RENDER
     this._renderer = null
   }
@@ -476,5 +479,27 @@ export default class Node {
 
   getAllViews() {
     return [this, ...this.childrenArray.flatMap((c) => c.getAllViews())]
+  }
+
+  updateBuffer(device, canvasWidth, canvasHeight) {
+    if (!(this.dirty & DIRTY_RENDER)) return
+
+    const verts = this.getVertices(canvasWidth, canvasHeight)
+    this._vertices = verts
+
+    if (!this._vertexBuffer || this._vertexBuffer.size < verts.byteLength) {
+      this._vertexBuffer?.destroy()
+      this._vertexBuffer = device.createBuffer({
+        size: verts.byteLength,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        mappedAtCreation: true,
+      })
+      new Float32Array(this._vertexBuffer.getMappedRange()).set(verts)
+      this._vertexBuffer.unmap()
+    } else {
+      device.queue.writeBuffer(this._vertexBuffer, 0, verts.buffer)
+    }
+
+    this.dirty &= ~DIRTY_RENDER
   }
 }

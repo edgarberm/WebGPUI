@@ -9,11 +9,11 @@ import {
 /**
  * @todo
  *
- * 1️⃣ Sistema dirty / invalidation (measure vs layout vs paint) ⏳
- * 2️⃣ Re-layout solo cuando sea necesario (pipeline por fases)
- * 3️⃣ Decidir política de píxeles (sub-pixel vs integer + snapping)
- * 4️⃣ Renderer optimizations (batching / instancing básico)
- * 5️⃣ Clipping / masks6️⃣ Shadows SDF
+ * 1️⃣ Re-layout solo cuando sea necesario (pipeline por fases)
+ * 2️⃣ Decidir política de píxeles (sub-pixel vs integer + snapping)
+ * 3️⃣ Renderer optimizations (batching / instancing básico)
+ * 4️⃣ Culling / Clipping / masks
+ * 5️⃣ Shadows SDF
  */
 export default class WebGPURenderer {
   constructor(canvas, root) {
@@ -137,11 +137,9 @@ export default class WebGPURenderer {
 
   renderFrame() {
     this.needsRender = false
-
     const w = (this.canvas.width = innerWidth * this.dpr)
     const h = (this.canvas.height = innerHeight * this.dpr)
 
-    // === Medir y layout ===
     this.root.measure(this.textRenderer)
     this.root.layout(0, 0, w / this.dpr, h / this.dpr)
 
@@ -157,68 +155,38 @@ export default class WebGPURenderer {
       ],
     })
 
-    // === Dibujar nodos rect ===
-    const nodes = this.root
-      .getAllViews()
-      .filter((n) => !n.isText && n.dirty & DIRTY_RENDER)
+    const allNodes = this.root.getAllViews()
 
-    nodes.forEach((n) => {
-      const verts = n.getVertices(w / this.dpr, h / this.dpr)
-      const buf = this.device.createBuffer({
-        size: verts.byteLength,
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-        mappedAtCreation: true,
+    // === RECT NODES ===
+    allNodes
+      .filter((n) => !n.isText)
+      .forEach((n) => {
+        if (n.dirty & DIRTY_RENDER) {
+          n.updateBuffer(this.device, w / this.dpr, h / this.dpr)
+        }
+
+        pass.setPipeline(this.rectPipeline)
+        pass.setVertexBuffer(0, n._vertexBuffer)
+        pass.draw(n._vertices.length / 11)
       })
 
-      new Float32Array(buf.getMappedRange()).set(verts)
+    // === TEXT NODES ===
+    allNodes
+      .filter((t) => t.isText)
+      .forEach((t) => {
+        t.prepareTexture(this.device, this.textRenderer)
+        if (t.dirty & DIRTY_RENDER) {
+          t.updateBuffer(this.device, w / this.dpr, h / this.dpr)
+          t.prepareBindGroup(this.device, this.sampler, this.textPipeline)
+        }
 
-      buf.unmap()
-
-      pass.setPipeline(this.rectPipeline)
-      pass.setVertexBuffer(0, buf)
-      pass.draw(verts.length / 11)
-
-      n.dirty &= ~DIRTY_RENDER
-    })
-
-    // === Dibujar nodos texto ===
-    const texts = this.root
-      .getAllViews()
-      .filter((n) => n.isText && n.dirty & DIRTY_RENDER)
-
-    texts.forEach((t) => {
-      t.prepareTexture(this.device, this.textRenderer)
-      const verts = new Float32Array(
-        t.getTexturedVertices(w / this.dpr, h / this.dpr)
-      )
-      const buf = this.device.createBuffer({
-        size: verts.byteLength,
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-        mappedAtCreation: true,
+        pass.setPipeline(this.textPipeline)
+        pass.setBindGroup(0, t.bindGroup)
+        pass.setVertexBuffer(0, t._vertexBuffer)
+        pass.draw(t._vertices.length / 4)
       })
-
-      new Float32Array(buf.getMappedRange()).set(verts)
-
-      buf.unmap()
-
-      const bindGroup = this.device.createBindGroup({
-        layout: this.textPipeline.getBindGroupLayout(0),
-        entries: [
-          { binding: 0, resource: t.texture.createView() },
-          { binding: 1, resource: this.sampler },
-        ],
-      })
-
-      pass.setPipeline(this.textPipeline)
-      pass.setBindGroup(0, bindGroup)
-      pass.setVertexBuffer(0, buf)
-      pass.draw(verts.length / 4)
-
-      t.dirty &= ~DIRTY_RENDER
-    })
 
     pass.end()
-
     this.device.queue.submit([encoder.finish()])
   }
 
@@ -236,6 +204,7 @@ export default class WebGPURenderer {
       node.dirty |= DIRTY_MEASURE | DIRTY_LAYOUT | DIRTY_RENDER
       node.childrenArray.forEach(markDirtyRecursively)
     }
+
     markDirtyRecursively(this.root)
 
     this.markDirty()

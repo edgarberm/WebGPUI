@@ -1,5 +1,6 @@
 import Node from './Node.js'
 import { normalizeColor } from '../utils/utils.js'
+import { DIRTY_RENDER } from '../core/DirtyFlags.js'
 
 export default class Text extends Node {
   constructor(content) {
@@ -12,11 +13,15 @@ export default class Text extends Node {
     this.textColor = [0, 0, 0, 1]
     this.texture = null
     this.isText = true
+
+    this._vertexBuffer = null
+    this._vertices = null
+    this.bindGroup = null
   }
 
-  font(size, family = 'system-ui,-apple-system,sans-serif') {
+  font(size, family) {
     this.fontSize = size
-    this.fontFamily = family
+    if (family) this.fontFamily = family
     this.texture = null
 
     return this
@@ -87,5 +92,31 @@ export default class Text extends Node {
       x1, y0, 1, 0,
       x1, y1, 1, 1,
     ])
+  }
+
+  updateBuffer(device, canvasWidth, canvasHeight) {
+    this._vertices = this.getTexturedVertices(canvasWidth, canvasHeight)
+
+    if (!this._vertexBuffer) {
+      this._vertexBuffer = device.createBuffer({
+        size: this._vertices.byteLength,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+      })
+    }
+
+    device.queue.writeBuffer(this._vertexBuffer, 0, this._vertices)
+    this.dirty &= ~DIRTY_RENDER
+  }
+
+  prepareBindGroup(device, sampler, pipeline) {
+    if (!this.bindGroup) {
+      this.bindGroup = device.createBindGroup({
+        layout: pipeline.getBindGroupLayout(0),
+        entries: [
+          { binding: 0, resource: this.texture.createView() },
+          { binding: 1, resource: sampler },
+        ],
+      })
+    }
   }
 }
