@@ -4,10 +4,12 @@ import TextRenderer from './TextRenderer.js'
 /**
  * @todo
  *
- * - Un sistema para invalidar/marcar dirty cuando algo cambie
- * - Detectar resize del canvas
- * - Re-layout solo cuando sea necesario
- * - Diferenciar entre cambios que requieren re-measure vs solo re-paint
+ * 1️⃣ Sistema dirty / invalidation (measure vs layout vs paint)
+ * 2️⃣ Re-layout solo cuando sea necesario (pipeline por fases)
+ * 3️⃣ Decidir política de píxeles (sub-pixel vs integer + snapping)
+ * 4️⃣ Renderer optimizations (batching / instancing básico)
+ * 5️⃣ Clipping / masks
+ * 6️⃣ Shadows SDF
  */
 export default class WebGPURenderer {
   constructor(canvas, root) {
@@ -140,10 +142,10 @@ export default class WebGPURenderer {
     })
 
     // Dibujar rectangles
-    const views = this.root.getAllViews().filter((v) => !v.isText)
-    if (views.length) {
+    const nodes = this.root.getAllViews().filter((v) => !v.isText)
+    if (nodes.length) {
       const verts = new Float32Array(
-        views.flatMap((v) => [...v.getVertices(w / this.dpr, h / this.dpr)])
+        nodes.flatMap((v) => [...v.getVertices(w / this.dpr, h / this.dpr)])
       )
       const buf = this.device.createBuffer({
         size: verts.byteLength,

@@ -11,7 +11,7 @@ export default class Node {
     // Style properties
     this.paddingVal = 0
     this.bgColor = [255, 255, 255, 0]
-    this.cornerRadiusVal = 0
+    this.borderRadiusValue = 0
 
     // Layout properties
     this.layoutMode = 'none' // 'vertical', 'horizontal', 'stack'
@@ -85,8 +85,8 @@ export default class Node {
     return this
   }
 
-  cornerRadius(r) {
-    this.cornerRadiusVal = r
+  borderRadius(r) {
+    this.borderRadiusValue = r
 
     return this
   }
@@ -102,11 +102,11 @@ export default class Node {
   measure(tr) {
     switch (this.layoutMode) {
       case 'vertical':
-        return this._measureVStack(tr)
+        return this._measureVerticalNode(tr)
       case 'horizontal':
-        return this._measureHStack(tr)
+        return this._measureHorizontalNode(tr)
       case 'stack':
-        return this._measureZStack(tr)
+        return this._measureStackNode(tr)
       default:
         return this._measureDefault(tr)
     }
@@ -128,7 +128,7 @@ export default class Node {
     this.measuredHeight = this.explicitHeight ?? h
   }
 
-  _measureVStack(tr) {
+  _measureVerticalNode(tr) {
     let w = 0
     let h = this.paddingVal * 2
 
@@ -146,7 +146,7 @@ export default class Node {
     this.measuredHeight = this.explicitHeight ?? h
   }
 
-  _measureHStack(tr) {
+  _measureHorizontalNode(tr) {
     let w = this.paddingVal * 2
     let h = 0
 
@@ -164,7 +164,7 @@ export default class Node {
     this.measuredHeight = this.explicitHeight ?? h + this.paddingVal * 2
   }
 
-  _measureZStack(tr) {
+  _measureStackNode(tr) {
     let w = 0
     let h = 0
 
@@ -191,11 +191,11 @@ export default class Node {
     // Layout children based on mode
     switch (this.layoutMode) {
       case 'vertical':
-        return this._layoutVStack(x, y, aw, ah)
+        return this._layoutVerticalNode(x, y, aw, ah)
       case 'horizontal':
-        return this._layoutHStack(x, y, aw, ah)
+        return this._layoutHorizontalNode(x, y, aw, ah)
       case 'stack':
-        return this._layoutZStack(x, y, aw, ah)
+        return this._layoutStackNode(x, y, aw, ah)
       default:
         return this._layoutDefault(x, y, aw, ah)
     }
@@ -213,7 +213,7 @@ export default class Node {
     })
   }
 
-  _layoutVStack(x, y, aw, ah) {
+  _layoutVerticalNode(x, y, aw, ah) {
     const iw = this.w - this.paddingVal * 2
     const ih = this.h - this.paddingVal * 2
 
@@ -282,7 +282,7 @@ export default class Node {
     })
   }
 
-  _layoutHStack(x, y, aw, ah) {
+  _layoutHorizontalNode(x, y, aw, ah) {
     const iw = this.w - this.paddingVal * 2
     const ih = this.h - this.paddingVal * 2
 
@@ -344,7 +344,7 @@ export default class Node {
     })
   }
 
-  _layoutZStack(x, y, aw, ah) {
+  _layoutStackNode(x, y, aw, ah) {
     const iw = this.w - this.paddingVal * 2
     const ih = this.h - this.paddingVal * 2
 
@@ -378,7 +378,7 @@ export default class Node {
 
     const w = this.w
     const h = this.h
-    const rad = this.cornerRadiusVal
+    const rad = this.borderRadiusValue
 
     // prettier-ignore
     return new Float32Array([

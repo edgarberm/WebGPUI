@@ -83,7 +83,10 @@
           return new Node()
             .direction('vertical')
             .align('center')
+            .padding(22)
             .spacing(8)
+            .background([0, 0, 0, 0.1])
+            .borderRadius(20)
             .children(
               new Text(title).font(18).fontWeight(600),
               new Text('Lorem ipsum dolor sit amet.')
@@ -96,7 +99,7 @@
           .align('start')
           .justify('space-between')
           .padding(60)
-          .background([0, 0, 0, 0.2])
+          .background([0, 0, 0, 0.01])
           .children(KPI('title 1'), KPI('title 2'), KPI('title 3'))
       }
 
