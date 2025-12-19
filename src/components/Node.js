@@ -1,4 +1,9 @@
 import { normalizeColor } from '../utils/utils.js'
+import {
+  DIRTY_MEASURE,
+  DIRTY_LAYOUT,
+  DIRTY_RENDER,
+} from '../core/DirtyFlags.js'
 
 export default class Node {
   constructor() {
@@ -29,6 +34,11 @@ export default class Node {
     this.y = 0
     this.w = 0
     this.h = 0
+
+    this.parent = null
+
+    this.dirty = DIRTY_MEASURE | DIRTY_LAYOUT | DIRTY_RENDER
+    this._renderer = null
   }
 
   // ========== LAYOUT MODIFIERS ==========
@@ -36,11 +46,15 @@ export default class Node {
   direction(mode) {
     this.layoutMode = mode
 
+    this.invalidate(DIRTY_LAYOUT)
+
     return this
   }
 
   spacing(value) {
     this.stackSpacing = value
+
+    this.invalidate(DIRTY_LAYOUT)
 
     return this
   }
@@ -48,11 +62,15 @@ export default class Node {
   justify(value) {
     this.justifyContent = value
 
+    this.invalidate(DIRTY_LAYOUT)
+
     return this
   }
 
   align(value) {
     this.alignItems = value
+
+    this.invalidate(DIRTY_LAYOUT)
 
     return this
   }
@@ -70,11 +88,15 @@ export default class Node {
       this.explicitHeight = h
     }
 
+    this.invalidate(DIRTY_MEASURE)
+
     return this
   }
 
   padding(p) {
     this.paddingVal = p
+
+    this.invalidate(DIRTY_MEASURE)
 
     return this
   }
@@ -82,34 +104,79 @@ export default class Node {
   background(c) {
     this.bgColor = normalizeColor(c)
 
+    this.invalidate(DIRTY_RENDER)
+
     return this
   }
 
   borderRadius(r) {
     this.borderRadiusValue = r
 
+    this.invalidate(DIRTY_RENDER)
+
     return this
   }
 
   children(...c) {
     this.childrenArray = c
+    c.forEach((child) => {
+      child.parent = this
+      if (this._renderer) child.setRenderer(this._renderer)
+    })
 
+    this.invalidate(DIRTY_MEASURE)
     return this
+  }
+
+  // ========== DIRTY/INVALIDATE ==========
+
+  invalidate(flag = DIRTY_RENDER) {
+    if (this.dirty & flag) return
+
+    this.dirty |= flag
+
+    // Propagate up
+    if (this.parent) {
+      if (flag & DIRTY_MEASURE) {
+        this.parent.invalidate(DIRTY_MEASURE)
+      } else if (flag & DIRTY_LAYOUT) {
+        this.parent.invalidate(DIRTY_LAYOUT)
+      } else {
+        this.parent.invalidate(DIRTY_RENDER)
+      }
+    }
+
+    if (this._renderer) {
+      this._renderer.markDirty()
+    }
+  }
+
+  setRenderer(renderer) {
+    this._renderer = renderer
+    this.childrenArray.forEach((c) => c.setRenderer(renderer))
   }
 
   // ========== MEASURE ==========
 
-  measure(tr) {
+  measure(textRenderer) {
+    if (!(this.dirty & DIRTY_MEASURE)) return
+
     switch (this.layoutMode) {
       case 'vertical':
-        return this._measureVerticalNode(tr)
+        this._measureVerticalNode(textRenderer)
+        break
       case 'horizontal':
-        return this._measureHorizontalNode(tr)
+        this._measureHorizontalNode(textRenderer)
+        break
       case 'stack':
-        return this._measureStackNode(tr)
+        this._measureStackNode(textRenderer)
+        break
       default:
-        return this._measureDefault(tr)
+        this._measureDefault(textRenderer)
     }
+
+    this.dirty &= ~DIRTY_MEASURE
+    this.dirty |= DIRTY_LAYOUT | DIRTY_RENDER
   }
 
   _measureDefault(tr) {
@@ -181,14 +248,30 @@ export default class Node {
   // ========== LAYOUT ==========
 
   layout(x, y, aw, ah) {
-    // Set own position and size
+    const needsLayout = this.dirty & DIRTY_LAYOUT
+
+    if (needsLayout) {
+      this._layoutImpl(x, y, aw, ah)
+
+      this.dirty &= ~DIRTY_LAYOUT
+      this.dirty |= DIRTY_RENDER
+    }
+
+    // 🔑 SIEMPRE propagar a hijos
+    this.childrenArray.forEach((c) => {
+      c.layout(c.x, c.y, c.w, c.h)
+    })
+  }
+
+  _layoutImpl(x, y, aw, ah) {
+    const maxW = this.maxWidth ?? Infinity
+    const maxH = this.maxHeight ?? Infinity
+
     this.x = x
     this.y = y
-    this.w = this.maxWidth === Infinity ? aw : Math.min(this.measuredWidth, aw)
-    this.h =
-      this.maxHeight === Infinity ? ah : Math.min(this.measuredHeight, ah)
+    this.w = this.w = Math.min(this.measuredWidth, aw, maxW)
+    this.h = this.h = Math.min(this.measuredHeight, ah, maxH)
 
-    // Layout children based on mode
     switch (this.layoutMode) {
       case 'vertical':
         return this._layoutVerticalNode(x, y, aw, ah)
