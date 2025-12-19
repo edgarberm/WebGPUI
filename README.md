@@ -92,7 +92,7 @@ Background and rounded corners are GPU-rendered.
 
 ```js
 .background([255, 255, 255, 1])
-.cornerRadius(12)
+.borderRadius(12)
 ```
 
 Colors are defined using RGBA values, keeping the API familiar to web developers.
@@ -105,7 +105,7 @@ Text is implemented as a specialized node:
 new Text("Hello WebGPUI")
   .font(24, "system-ui")
   .fontWeight(600)
-  .foregroundColor([0, 0, 0, 1])
+  .color([0, 0, 0, 1])
 ```
 
 Internally:
@@ -145,7 +145,7 @@ const app = new Node()
     new Node()
       .frame(200, 100)
       .background([245, 90, 30, 1])
-      .cornerRadius(16)
+      .borderRadius(16)
   )
 
 new WebGPURenderer(canvas, app)
@@ -156,19 +156,22 @@ new WebGPURenderer(canvas, app)
 WebGPUI is experimental.
 
 Currently implemented
-✔️ Unified node-based layout model
 
-✔️ Direction-based layout (vertical / horizontal / stack)
+✅ Unified node-based layout model
 
-✔️ Flexbox-like justify & align behavior
+✅ Direction-based layout (vertical / horizontal / stack)
 
-✔️ Padding and spacing
+✅ Flexbox-like justify & align behavior
 
-✔️ Rounded rectangle rendering on GPU
+✅ Padding and spacing
 
-✔️ Text rendering via WebGPU
+✅ Rounded rectangle rendering on GPU
 
-✔️ Continuous GPU render loop
+✅ Text rendering via WebGPU
+
+✅ Continuous GPU render loop
+
+✅ Buffer and draw-call optimization
 
 Not implemented / work in progress
 
@@ -177,8 +180,6 @@ Not implemented / work in progress
 ❌ Clipping / overflow handling
 
 ❌ Text atlases and batching
-
-❌ Buffer and draw-call optimization
 
 ❌ Stable public API
 
