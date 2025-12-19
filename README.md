@@ -205,4 +205,4 @@ MIT License.
 
 ## 👤 Author
 Created by Edgar Bermejo
-A personal research project focused on UI systems and WebGPU.****
+A personal research project focused on UI systems and WebGPU.
