@@ -1,6 +1,10 @@
 import Node from './Node.js'
 import { normalizeColor } from '../utils/utils.js'
-import { DIRTY_RENDER } from '../core/DirtyFlags.js'
+import {
+  DIRTY_RENDER,
+  DIRTY_MEASURE,
+  DIRTY_LAYOUT,
+} from '../core/DirtyFlags.js'
 
 export default class Text extends Node {
   constructor(content) {
@@ -13,6 +17,7 @@ export default class Text extends Node {
     this.textColor = [0, 0, 0, 1]
     this.texture = null
     this.isText = true
+    this._textDirty = true
 
     this._vertexBuffer = null
     this._vertices = null
@@ -24,12 +29,16 @@ export default class Text extends Node {
     if (family) this.fontFamily = family
     this.texture = null
 
+    this.invalidate(DIRTY_MEASURE)
+
     return this
   }
 
   fontWeight(weight) {
     this._fontWeight = weight
     this.texture = null
+
+    this.invalidate(DIRTY_MEASURE)
 
     return this
   }
@@ -38,10 +47,14 @@ export default class Text extends Node {
     this.textColor = normalizeColor(color)
     this.texture = null
 
+    this.invalidate(DIRTY_RENDER)
+
     return this
   }
 
   measure(textRenderer) {
+    if (!(this.dirty & DIRTY_MEASURE)) return
+
     const padding = 4
     const ts = textRenderer.measureText(
       this.textContent,
@@ -52,29 +65,39 @@ export default class Text extends Node {
 
     this.measuredWidth = ts.width + padding * 2
     this.measuredHeight = ts.height + padding * 2
+
+    this.dirty &= ~DIRTY_MEASURE
+    this.dirty |= DIRTY_LAYOUT | DIRTY_RENDER
   }
 
   layout(x, y) {
+    if (!(this.dirty & DIRTY_LAYOUT)) return
+
     this.x = x
     this.y = y
     this.w = this.measuredWidth
     this.h = this.measuredHeight
+
+    this.dirty &= ~DIRTY_LAYOUT
+    this.dirty |= DIRTY_RENDER
   }
 
   prepareTexture(device, textRenderer) {
-    if (!this.texture) {
-      const res = textRenderer.renderToTexture(
-        device,
-        this.textContent,
-        this.fontSize,
-        this.fontFamily,
-        this._fontWeight,
-        this.textColor
-      )
-      this.texture = res.texture
-      this.texWidth = res.width
-      this.texHeight = res.height
-    }
+    if (!this._textDirty || this.texture) return
+
+    const res = textRenderer.renderToTexture(
+      device,
+      this.textContent,
+      this.fontSize,
+      this.fontFamily,
+      this._fontWeight,
+      this.textColor
+    )
+    this.texture = res.texture
+    this.texWidth = res.width
+    this.texHeight = res.height
+    this._textDirty = false
+    this.bindGroup = null
   }
 
   getTexturedVertices(canvasWidth, canvasHeight) {

@@ -165,17 +165,19 @@ export default class WebGPURenderer {
           n.updateBuffer(this.device, w / this.dpr, h / this.dpr)
         }
 
-        pass.setPipeline(this.rectPipeline)
-        pass.setVertexBuffer(0, n._vertexBuffer)
-        pass.draw(n._vertices.length / 11)
+        if (n._vertexBuffer) {
+          pass.setPipeline(this.rectPipeline)
+          pass.setVertexBuffer(0, n._vertexBuffer)
+          pass.draw(n._vertices.length / 11)
+        }
       })
 
     // === TEXT NODES ===
     allNodes
       .filter((t) => t.isText)
       .forEach((t) => {
-        t.prepareTexture(this.device, this.textRenderer)
         if (t.dirty & DIRTY_RENDER) {
+          t.prepareTexture(this.device, this.textRenderer)
           t.updateBuffer(this.device, w / this.dpr, h / this.dpr)
           t.prepareBindGroup(this.device, this.sampler, this.textPipeline)
         }
