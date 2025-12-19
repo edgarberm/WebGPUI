@@ -9,11 +9,9 @@ import {
 /**
  * @todo
  *
- * 1️⃣ Re-layout solo cuando sea necesario (pipeline por fases)
- * 2️⃣ Decidir política de píxeles (sub-pixel vs integer + snapping)
- * 3️⃣ Renderer optimizations (batching / instancing básico)
- * 4️⃣ Culling / Clipping / masks
- * 5️⃣ Shadows SDF
+ * 1️⃣ Renderer optimizations (batching / instancing básico)
+ * 2️⃣ Culling / Clipping / masks
+ * 3️⃣ Shadows SDF
  */
 export default class WebGPURenderer {
   constructor(canvas, root) {
@@ -41,8 +39,11 @@ export default class WebGPURenderer {
     this.textPipeline = this.createTextPipeline(format)
 
     this.sampler = this.device.createSampler({
-      magFilter: 'linear',
-      minFilter: 'linear',
+      magFilter: 'nearest', // ⚠️ Cambio de 'linear' a 'nearest'
+      minFilter: 'nearest', // ⚠️ Para texto pixel-perfect
+      mipmapFilter: 'nearest',
+      addressModeU: 'clamp-to-edge',
+      addressModeV: 'clamp-to-edge',
     })
 
     // Conectamos renderer a root
@@ -200,7 +201,14 @@ export default class WebGPURenderer {
   }
 
   onResize() {
-    this.dpr = window.devicePixelRatio || 1
+    const newDPR = window.devicePixelRatio || 1
+
+    // Si DPR cambió, actualizar textRenderer
+    if (newDPR !== this.dpr) {
+      this.dpr = newDPR
+      this.textRenderer.setDPR(newDPR)
+    }
+
     // Marcar toda la escena como sucia
     const markDirtyRecursively = (node) => {
       node.dirty |= DIRTY_MEASURE | DIRTY_LAYOUT | DIRTY_RENDER
@@ -208,7 +216,6 @@ export default class WebGPURenderer {
     }
 
     markDirtyRecursively(this.root)
-
     this.markDirty()
   }
 }

@@ -4,6 +4,7 @@ import {
   DIRTY_LAYOUT,
   DIRTY_RENDER,
 } from '../core/DirtyFlags.js'
+import { snapPixel, snapSize, snapRect } from '../core/PixelPolicy.js'
 
 export default class Node {
   constructor() {
@@ -42,6 +43,8 @@ export default class Node {
 
     this.dirty = DIRTY_MEASURE | DIRTY_LAYOUT | DIRTY_RENDER
     this._renderer = null
+
+    this.pixelSnapping = true
   }
 
   // ========== LAYOUT MODIFIERS ==========
@@ -178,6 +181,13 @@ export default class Node {
         this._measureDefault(textRenderer)
     }
 
+    if (this.pixelSnapping) {
+      const dpr = this._renderer?.dpr || 1
+
+      this.measuredWidth = snapSize(this.measuredWidth, dpr)
+      this.measuredHeight = snapSize(this.measuredHeight, dpr)
+    }
+
     this.dirty &= ~DIRTY_MEASURE
     this.dirty |= DIRTY_LAYOUT | DIRTY_RENDER
   }
@@ -256,11 +266,20 @@ export default class Node {
     if (needsLayout) {
       this._layoutImpl(x, y, aw, ah)
 
+      if (this.pixelSnapping) {
+        const dpr = this._renderer?.dpr || 1
+        const snapped = snapRect(this.x, this.y, this.w, this.h, dpr)
+        this.x = snapped.x
+        this.y = snapped.y
+        this.w = snapped.w
+        this.h = snapped.h
+      }
+
       this.dirty &= ~DIRTY_LAYOUT
       this.dirty |= DIRTY_RENDER
     }
 
-    // 🔑 SIEMPRE propagar a hijos
+    // SIEMPRE propagar a hijos
     this.childrenArray.forEach((c) => {
       c.layout(c.x, c.y, c.w, c.h)
     })
@@ -269,6 +288,12 @@ export default class Node {
   _layoutImpl(x, y, aw, ah) {
     const maxW = this.maxWidth ?? Infinity
     const maxH = this.maxHeight ?? Infinity
+
+    if (this.pixelSnapping) {
+      const dpr = this._renderer?.dpr || 1
+      x = snapPixel(x, dpr)
+      y = snapPixel(y, dpr)
+    }
 
     this.x = x
     this.y = y
@@ -288,7 +313,6 @@ export default class Node {
   }
 
   _layoutDefault(x, y, aw, ah) {
-    // Layout children at same position (stacked, but no special alignment)
     this.childrenArray.forEach((c) => {
       c.layout(
         x + this.paddingVal,
@@ -342,6 +366,11 @@ export default class Node {
       }
     }
 
+    if (this.pixelSnapping) {
+      const dpr = this._renderer?.dpr || 1
+      cy = snapPixel(cy, dpr)
+    }
+
     this.childrenArray.forEach((c) => {
       let cx = x + this.paddingVal
 
@@ -358,6 +387,11 @@ export default class Node {
           break
       }
 
+      if (this.pixelSnapping) {
+        const dpr = this._renderer?.dpr || 1
+        cx = snapPixel(cx, dpr)
+      }
+
       if (c.isText) {
         c.layout(cx, cy)
       } else {
@@ -365,6 +399,11 @@ export default class Node {
       }
 
       cy += c.h + dynamicSpacing
+
+      if (this.pixelSnapping) {
+        const dpr = this._renderer?.dpr || 1
+        cy = snapPixel(cy, dpr)
+      }
     })
   }
 
@@ -411,6 +450,11 @@ export default class Node {
       }
     }
 
+    if (this.pixelSnapping) {
+      const dpr = this._renderer?.dpr || 1
+      cx = snapPixel(cx, dpr)
+    }
+
     this.childrenArray.forEach((c) => {
       let cy = y + this.paddingVal
 
@@ -425,8 +469,18 @@ export default class Node {
           break
       }
 
+      if (this.pixelSnapping) {
+        const dpr = this._renderer?.dpr || 1
+        cy = snapPixel(cy, dpr)
+      }
+
       c.layout(cx, cy, c.measuredWidth, ih)
       cx += c.w + dynamicSpacing
+
+      if (this.pixelSnapping) {
+        const dpr = this._renderer?.dpr || 1
+        cx = snapPixel(cx, dpr)
+      }
     })
   }
 
@@ -447,6 +501,12 @@ export default class Node {
           cx += iw - c.measuredWidth
           cy += ih - c.measuredHeight
           break
+      }
+
+      if (this.pixelSnapping) {
+        const dpr = this._renderer?.dpr || 1
+        cx = snapPixel(cx, dpr)
+        cy = snapPixel(cy, dpr)
       }
 
       c.layout(cx, cy, iw, ih)
